@@ -1,30 +1,30 @@
 let account;
 
 const candidates = {
-  Rama: "candidate-1",
-  Nick: "candidate-2",
-  Jose: "candidate-3",
+  Cat: 1,
+  Dog: 2,
 };
 
 const getAccounts = () => {
-  $.getJSON("/api/accounts", (data) => {
+  $.getJSON("/api/contract/accounts", (data) => {
     console.log(data);
     account = data.account;
   });
 };
 
-const totalVotesFor = (names) => {
-  $.post("/api/total", { names }, (data) => {
+const totalVotesFor = (ids) => {
+  $.post("/api/contract/total", { ids }, (data) => {
     console.log(data);
     for (const name of Object.keys(data)) {
-      $("#" + candidates[name]).html(data[name]);
+      $(`td#\\3${name}`).html(data[name]["voteCount"]);
+      $(`#img${name}`).attr("src", `/api/file/cat/${data[name]["image"]}`);
     }
   });
 };
 
 const voteForCandidate = () => {
-  const name = $("#candidate").val();
-  $.post("/api/vote", { name, from: account }, (data) => {
+  const id = Number($("#candidate-select").val());
+  $.post("/api/contract/vote", { id, from: account }, (data) => {
     console.log(data);
     document.location.reload();
   });
@@ -32,5 +32,5 @@ const voteForCandidate = () => {
 
 $(document).ready(async () => {
   getAccounts();
-  totalVotesFor(Object.keys(candidates));
+  totalVotesFor(Object.values(candidates));
 });

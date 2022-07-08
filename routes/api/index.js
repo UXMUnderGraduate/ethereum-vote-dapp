@@ -1,8 +1,10 @@
-const express = require("express");
-const contractRouter = require("./contract");
+import express from "express";
+import contractRouter from "./contract.js";
+import fileRouter from "./file.js";
 
 const router = express.Router();
 
-router.use("/", contractRouter);
+router.use("/contract", contractRouter);
+router.use("/file", fileRouter);
 
-module.exports = router;
+export default router;

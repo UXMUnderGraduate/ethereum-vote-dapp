@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
-    <title>Hello World DApp</title>
+    <title>Vote DApp</title>
     <link
       href="https://fonts.googleapis.com/css?family=Open Sans:400,700"
       rel="stylesheet"
@@ -14,7 +14,7 @@
     />
   </head>
   <body class="container">
-    <h1>A Simple Hello World Voting Application</h1>
+    <h1>A Simple Voting Application</h1>
     <div class="table-responsive">
       <table class="table table-bordered">
         <thead>
@@ -25,24 +25,30 @@
         </thead>
         <tbody>
           <tr>
-            <td>Rama</td>
-            <td id="candidate-1"></td>
+            <td>
+              <img id="img1" width="300px" />
+              <br />Cat
+            </td>
+            <td id="1"></td>
           </tr>
           <tr>
-            <td>Nick</td>
-            <td id="candidate-2"></td>
-          </tr>
-          <tr>
-            <td>Jose</td>
-            <td id="candidate-3"></td>
+            <td>
+              <img id="img2" width="300px" />
+              <br />Dog
+            </td>
+            <td id="2"></td>
           </tr>
         </tbody>
       </table>
     </div>
-    <input type="text" id="candidate" />
+    <label for="candidate"></label>
+    <select name="candidates" id="candidate-select" style="padding: 6px 12px">
+      <option value="">-- Choose one candidate --</option>
+      <option value="1">Cat</option>
+      <option value="2">Dog</option>
+    </select>
     <a href="#" onclick="voteForCandidate()" class="btn btn-primary">Vote</a>
   </body>
-  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="/js/index.js"></script>
 </html>

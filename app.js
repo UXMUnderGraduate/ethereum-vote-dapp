@@ -1,13 +1,15 @@
-const express = require("express");
-const morgan = require("morgan");
-const path = require("path");
-const nunjucks = require("nunjucks");
+import express from "express";
+import morgan from "morgan";
+import path from "path";
+import nunjucks from "nunjucks";
 
-const indexRouter = require("./routes/index");
-const apiRouter = require("./routes/api");
+import indexRouter from "./routes/index.js";
+import apiRouter from "./routes/api/index.js";
+
+const __dirname = path.resolve();
 
 const app = express();
-app.set("port", process.env.PORT || 3000);
+app.set("port", process.env.PORT || 5000);
 
 app.set("view engine", "html");
 nunjucks.configure("views", {

@@ -1,37 +1,53 @@
-const express = require("express");
-const fs = require("fs");
-const ganache = require("ganache");
-const Web3 = require("web3");
-const web3 = new Web3(ganache.provider());
+import express from "express";
+import fs from "fs";
+import Web3 from "web3";
 
-let hash;
-const candidates = ["Rama", "Nick", "Jose"].map((name) =>
-  web3.utils.asciiToHex(name)
+const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+
+let defaultAccount;
+let electionInstance;
+
+const bytecode = fs.readFileSync("./Election_sol_Election.bin").toString();
+const abi = JSON.parse(
+  fs.readFileSync("./Election_sol_Election.abi").toString()
 );
-
-const bytecode = fs.readFileSync("./Voting_sol_Voting.bin").toString();
-const abi = JSON.parse(fs.readFileSync("./Voting_sol_Voting.abi").toString());
 const deployedContract = new web3.eth.Contract(abi);
-
 web3.eth
   .getAccounts()
   .then((accounts) => {
     console.log(accounts);
-    hash = accounts[0];
+
+    // Ethereum account for contract deployment
+    defaultAccount = accounts[0];
   })
-  .then(() => {
-    deployedContract
+  .then(async () => {
+    await deployedContract
       .deploy({
         data: bytecode,
-        arguments: [candidates],
+        arguments: [],
       })
-      .send({
-        from: hash,
-        gas: 1500000,
-        gasPrice: web3.utils.toWei("0.00003", "ether"),
+      .send(
+        {
+          from: defaultAccount,
+          gas: 1000000,
+          gasPrice: web3.utils.toWei("0.000001", "ether"),
+        },
+        (_err, trasactionHash) => {
+          console.log(`Transaction Hash: ${trasactionHash}`);
+        }
+      )
+      .on("error", (err) => {
+        console.error(err);
       })
+      .on("receipt", (receipt) => {
+        console.log(`Contract Receipt: ${receipt.contractAddress}`);
+      })
+      .on("confirmation", (_confirmationNumber, _receipt) => {})
       .then((newContractInstance) => {
-        deployedContract.options.address = newContractInstance.options.address;
+        electionInstance = newContractInstance;
+        console.log(
+          `Deployed Contract Address: ${newContractInstance.options.address}`
+        );
       });
   });
 
@@ -55,28 +71,35 @@ router.get("/accounts", async (req, res, next) => {
   });
 });
 
+router.get("/candidates", async (req, res, next) => {});
+
 router.post("/total", async (req, res, next) => {
-  const names = req.body["names[]"];
-  console.log(names);
+  const ids = req.body["ids[]"];
+  console.log(ids);
 
   const data = {};
-  for (const name of names) {
-    const count = await deployedContract.methods
-      .totalVotesFor(web3.utils.asciiToHex(name))
-      .call();
-    data[name] = count;
+  for (const id of ids) {
+    await electionInstance.methods
+      .candidates(id)
+      .call()
+      .then((candidate) => {
+        const voteCount = candidate[2];
+        const image = candidate[3];
+
+        data[id] = { id, voteCount, image };
+      });
   }
 
   return res.json(data);
 });
 
 router.post("/vote", async (req, res, next) => {
-  const { name, from } = req.body;
+  const { id, from } = req.body;
+
+  console.log(req.body);
 
   try {
-    const result = await deployedContract.methods
-      .voteForCandidate(web3.utils.asciiToHex(name))
-      .send({ from });
+    const result = await electionInstance.methods.vote(id).send({ from });
     console.log(result);
 
     return res.json(result);
@@ -86,4 +109,4 @@ router.post("/vote", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;
